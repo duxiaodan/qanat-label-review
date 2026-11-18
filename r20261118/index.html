@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qanat label review</title>
+<style>
+  :root{--bg:#f6f7f7;--card:#ffffff;--ink:#15181a;--mut:#5b6367;--line:#d5dadc;--acc:#1f5fbf;--flag:#b3261e;--flagbg:#fdecea}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  [hidden]{display:none!important}
+  header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  header h1{font-size:16px;margin:0 12px 0 0;font-weight:600}
+  button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+  .sp{flex:1}
+  .tally{color:var(--mut)}
+  .tally b{color:var(--flag)}
+  main{max-width:1500px;margin:0 auto;padding:16px 20px 60px}
+  .intro{color:var(--mut);max-width:70em;margin:0 0 16px}
+  .name{margin:0 0 12px;display:flex;gap:8px;align-items:center}
+  input[type=text],input[type=password]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+  .name input{width:16em}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:0 0 18px}
+  .card.flagged{border-color:var(--flag)}
+  .top{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+  .top h2{font-size:17px;margin:0;font-weight:600}
+  .top .n{color:var(--mut)}
+  code{font:600 15px ui-monospace,Menlo,Consolas,monospace}
+  .meta{color:var(--mut);margin:2px 0 8px}
+  table{border-collapse:collapse;font-size:14px;margin:0 0 10px}
+  th,td{text-align:left;padding:2px 16px 2px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--mut);font-weight:400}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  figure{margin:0}
+  figure img{display:block;width:100%;height:auto;aspect-ratio:1/1;background:#e9ecec;border:1px solid var(--line)}
+  figcaption{font-size:13px;color:var(--mut);margin-top:4px}
+  .act{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px}
+  .chk{display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;padding:6px 10px;border:1px solid var(--line);border-radius:6px}
+  .chk:has(input:checked){background:var(--flagbg);border-color:var(--flag);color:var(--flag)}
+  .chk input{width:18px;height:18px}
+  .act input[type=text]{flex:1;min-width:14em}
+  .summary{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-top:28px}
+  .summary h2{font-size:17px;margin:0 0 4px}
+  .summary h3{font-size:15px;margin:16px 0 6px;display:flex;gap:12px;align-items:center}
+  .summary pre{margin:0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;min-height:2.6em}
+  .summary .fin{margin-top:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  dialog{border:1px solid var(--line);border-radius:8px;padding:18px;max-width:640px;width:92vw}
+  dialog textarea{width:100%;height:200px;font:13px ui-monospace,Menlo,monospace}
+  .gate{max-width:420px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:24px}
+  .gate h1{font-size:19px;margin:0 0 6px}
+  .gate label{display:block;margin:14px 0 4px;color:var(--mut)}
+  .gate input{width:100%}
+  .gate button{margin-top:16px}
+  .gate .msg{color:var(--flag);min-height:1.5em;margin:10px 0 0}
+  @media (max-width:800px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="gate" id="gate" hidden>
+  <h1>Qanat label review</h1>
+  <p class="intro" style="margin:0">Use the same name and passcode as for the qanat labeling tool.</p>
+  <label for="gname">Your name</label><input type="text" id="gname" autocomplete="off">
+  <label for="gpass">Passcode</label><input type="password" id="gpass" autocomplete="current-password">
+  <button id="unlock" type="button" class="primary">Unlock</button>
+  <p class="msg" id="gmsg" role="alert"></p>
+</div>
+<div id="app" hidden>
+<header>
+  <h1>Label review</h1>
+  <button id="tfp" type="button"></button>
+  <button id="tfn" type="button"></button>
+  <span class="sp"></span>
+  <span class="tally" id="tally"></span>
+  <button id="only" type="button" aria-pressed="false">Show ticked only</button>
+  <button id="finish" type="button" class="primary">Confirm and finish</button>
+</header>
+<main>
+  <p class="intro" id="intro"></p>
+  <div class="name"><label for="who">Reviewer</label><input id="who" type="text" placeholder="your name"></div>
+  <div id="list"></div>
+  <section class="summary" aria-labelledby="sumh">
+    <h2 id="sumh">Summary of what you ticked</h2>
+    <p class="intro" style="margin:0">These two lists update as you tick boxes, across both tabs. Each line is the project and the crop ID to open in the labeling tool.</p>
+    <h3>Needs relabeling (<span id="nrel">0</span>) <button type="button" data-copy="lrel">Copy</button></h3>
+    <pre id="lrel"></pre>
+    <h3>Needs excluding (<span id="nexc">0</span>) <button type="button" data-copy="lexc">Copy</button></h3>
+    <pre id="lexc"></pre>
+    <div class="fin"><button id="finish2" type="button" class="primary">Confirm and finish</button><span class="tally">Downloads a small file with your choices. Please email that file to Xiaodan.</span></div>
+  </section>
+</main>
+</div>
+<dialog id="dlg">
+  <p><b>Thank you. Your choices were saved to a file.</b></p>
+  <p>A file named <code id="fname"></code> was downloaded. Please email it to Xiaodan. If no download started, copy the text below into the email instead.</p>
+  <textarea id="txt" readonly></textarea>
+  <p><button id="copy" type="button">Copy text</button> <button id="close" type="button">Close</button></p>
+</dialog>
+<script>
+const CFG={"mode": "encrypted", "release": "r20261118", "cryptoJs": "../crypto.js", "siteBase": "/qanat-label-tool/", "assetBase": "./"};
+let DATA=[];
+const KEY="qanat_label_review_"+CFG.release;
+let state={}; try{state=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){state={}}
+state.items=state.items||{}; state.who=state.who||"";
+let kind="fp", only=false, aesKey=null, cryptoMod=null, io=null;
+const $=id=>document.getElementById(id);
+const ST={approved:"approved",finished:"finished",unfinished:"not finished","":"n/a"};
+const TICK='Tick "Needs relabeling" if labels should be added or changed. Tick "Needs excluding" if the location is an ambiguous case, such as a cut-and-cover channel, that should be left out of benchmarking and training. Tick neither if the crop is labeled correctly.';
+const INTRO={
+ fp:"These crops are labeled negative, but the model gives them a high score. Each entry is the highest-scoring crop of one location. Left: the image. Right: the same image with the label-tool cell borders and IDs (yellow) and the area the model responds to (cyan outline). "+TICK,
+ fn:"These crops are labeled positive, but the model gives them a low score. Each entry is the lowest-scoring crop of one location. Left: the image. Right: the same image with the label-tool cell borders and IDs (yellow) and the existing shaft labels (red circles). "+TICK};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function it(n){return state.items[n]||(state.items[n]={relabel:false,exclude:false,note:""})}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function cellsOf(d){return d.cells.filter(c=>c.overlap>=0.03)}
+function line(d){const c=cellsOf(d).map(c=>c.id),s=it(d.name);return d.project+"  "+c[0]+(c.length>1?"  (also "+c.slice(1).join(", ")+")":"")+(s.note?"  # "+s.note:"")}
+function summary(){
+  const rel=DATA.filter(d=>it(d.name).relabel), exc=DATA.filter(d=>it(d.name).exclude);
+  $("nrel").textContent=rel.length; $("nexc").textContent=exc.length;
+  $("lrel").textContent=rel.map(line).join("\n")||"(none yet)"; $("lexc").textContent=exc.map(line).join("\n")||"(none yet)";
+  $("tally").innerHTML="Relabel: <b>"+rel.length+"</b> &nbsp; Exclude: <b>"+exc.length+"</b>";
+}
+function tabs(){
+  const nfp=DATA.filter(d=>d.kind==="fp").length,nfn=DATA.filter(d=>d.kind==="fn").length;
+  $("tfp").textContent="Possible missed labels ("+nfp+")"; $("tfn").textContent="Low-scoring positives ("+nfn+")";
+  $("tfp").hidden=$("tfn").hidden=!(nfp&&nfn); if(!nfp) kind="fn";
+  $("tfp").setAttribute("aria-pressed",kind==="fp"); $("tfn").setAttribute("aria-pressed",kind==="fn");
+}
+function imgTag(d,which,alt){
+  return CFG.mode==="encrypted" ? '<img data-enc="'+d.name+'_'+which+'" alt="'+esc(alt)+'">' : '<img loading="lazy" src="img/'+d.name+'_'+which+'.jpg" alt="'+esc(alt)+'">';
+}
+function render(){
+  $("intro").textContent=INTRO[kind]; tabs(); summary(); $("only").setAttribute("aria-pressed",only);
+  const L=DATA.filter(d=>d.kind===kind); let h="";
+  L.forEach((d,i)=>{
+    const s=it(d.name); if(only&&!(s.relabel||s.exclude)) return;
+    const cells=cellsOf(d), ag=d.agree!=null?" Flagged by "+d.agree+" of 10 models.":"", pl=d.site_crops===1?" crop at this location is ":" crops at this location are ";
+    h+='<section class="card'+((s.relabel||s.exclude)?" flagged":"")+'" id="c_'+d.name+'">'
+     +'<div class="top"><span class="n">'+(i+1)+' / '+L.length+'</span><h2>'+esc(d.project)+' &nbsp; <code>'+esc(cells[0].id)+'</code></h2><span class="n">'+esc(d.split)+' set</span></div>'
+     +'<p class="meta">'+(kind==="fp"?'Labeled negative. Model score <b>'+d.score.toFixed(2)+'</b>. '+d.site_crops+pl+'above the threshold.'+ag+(d.nearest_label_m!=null?' Nearest existing label: '+d.nearest_label_m+' m away.':'')
+        :'Labeled positive, '+d.shafts+' shaft'+(d.shafts===1?'':'s')+'. Model score <b>'+d.score.toFixed(2)+'</b>. '+d.site_crops+pl+'below the threshold.'+ag)+'</p>'
+     +'<table><thead><tr><th>crop ID</th><th>share of this image</th><th>existing labels</th><th>status</th></tr></thead><tbody>'
+     +cells.map(c=>'<tr><td><code>'+c.id+'</code></td><td>'+Math.round(c.overlap*100)+'%</td><td>'+c.labels+'</td><td>'+ST[c.status]+'</td></tr>').join("")+'</tbody></table>'
+     +'<div class="pair"><figure>'+imgTag(d,"raw",d.project+" "+cells[0].id)+'<figcaption>Image</figcaption></figure>'
+     +'<figure>'+imgTag(d,"mark","annotated")+'<figcaption>'+(kind==="fp"?"Crop borders (yellow), model focus (cyan)":"Crop borders (yellow), existing labels (red)")+'</figcaption></figure></div>'
+     +'<div class="act"><label class="chk"><input type="checkbox" data-n="'+d.name+'"'+(s.relabel?" checked":"")+'> Needs relabeling</label>'
+     +'<label class="chk"><input type="checkbox" data-x="'+d.name+'"'+(s.exclude?" checked":"")+'> Needs excluding</label>'
+     +'<input type="text" data-note="'+d.name+'" placeholder="optional note" value="'+esc(s.note)+'"></div></section>';
+  });
+  $("list").innerHTML=h||'<p class="intro">Nothing ticked in this list yet.</p>';
+  if(CFG.mode==="encrypted") watchImages();
+}
+async function loadEnc(img){
+  if(img.dataset.state) return; img.dataset.state="loading";
+  try{
+    const r=await fetch(CFG.assetBase+img.dataset.enc+".enc"); if(!r.ok) throw new Error("HTTP "+r.status);
+    const pt=await cryptoMod.decryptBlob(aesKey,new Uint8Array(await r.arrayBuffer()));
+    img.src=URL.createObjectURL(new Blob([pt],{type:"image/jpeg"})); img.dataset.state="done";
+  }catch(e){img.dataset.state=""; img.alt="image failed to load";}
+}
+function watchImages(){
+  if(io) io.disconnect();
+  io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);loadEnc(e.target)}}),{rootMargin:"1200px 0px"});
+  document.querySelectorAll("img[data-enc]").forEach(i=>io.observe(i));
+}
+function b64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function unlock(){
+  const name=$("gname").value.trim(), pw=$("gpass").value, msg=$("gmsg");
+  if(!name){msg.textContent="Please enter your name.";return} if(!pw){msg.textContent="Please enter the passcode.";return}
+  msg.textContent="Checking…"; $("unlock").disabled=true;
+  try{
+    cryptoMod=cryptoMod||await import(CFG.cryptoJs);
+    const cj=await (await fetch(CFG.siteBase+"crypto.json")).json(); let sitePw=null;
+    if(cj.su){ try{const r=await fetch(CFG.siteBase+(cj.su.file||"su.enc")); if(r.ok){const p=await cryptoMod.openSuEnvelope(cj.su,new Uint8Array(await r.arrayBuffer()),pw); if(p) sitePw=p.passcode;}}catch(e){} }
+    if(sitePw===null){ if(!(await cryptoMod.verifyPasscode(cj,pw))){msg.textContent="Wrong passcode.";return} sitePw=pw; }
+    aesKey=await cryptoMod.deriveKey(sitePw,b64(cj.salt),cj.iterations);
+    const r=await fetch(CFG.assetBase+"index.enc"); if(!r.ok) throw new Error("review data not found");
+    DATA=JSON.parse(new TextDecoder().decode(await cryptoMod.decryptBlob(aesKey,new Uint8Array(await r.arrayBuffer()))));
+    state.who=name; save(); start();
+  }catch(e){msg.textContent="Could not open the review: "+e.message}
+  finally{$("unlock").disabled=false}
+}
+function start(){ $("gate").hidden=true; $("app").hidden=false; $("who").value=state.who; msgClear(); render(); }
+function msgClear(){ $("gmsg").textContent=""; }
+function finish(){
+  if(!state.who.trim()){ $("who").focus(); $("who").scrollIntoView({block:"center"}); alert("Please enter your name in the Reviewer box first."); return; }
+  const row=d=>{const c=cellsOf(d).map(c=>c.id),s=it(d.name);return{name:d.name,list:d.kind==="fp"?"possible_missed_labels":"low_scoring_positives",split:d.split,project:d.project,crop_id:c[0],other_crop_ids:c.slice(1),dataset_crop:d.crop,relabel:!!s.relabel,exclude:!!s.exclude,note:s.note||""}};
+  const all=DATA.map(row), rel=all.filter(x=>x.relabel), exc=all.filter(x=>x.exclude);
+  const out={review:CFG.release,reviewer:state.who.trim(),finished_at:new Date().toISOString(),total_entries:all.length,needs_relabeling:rel,needs_excluding:exc,all_entries:all};
+  const text=JSON.stringify(out,null,1), day=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const fname="qanat_label_review_"+state.who.trim().replace(/[^A-Za-z0-9]+/g,"_")+"_"+day+".json";
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));a.download=fname;document.body.appendChild(a);a.click();a.remove();}catch(e){}
+  $("fname").textContent=fname;
+  $("txt").value="Reviewer: "+out.reviewer+"\nReview: "+out.review+"\n\nNeeds relabeling ("+rel.length+"):\n"+(DATA.filter(d=>it(d.name).relabel).map(line).join("\n")||"(none)")+"\n\nNeeds excluding ("+exc.length+"):\n"+(DATA.filter(d=>it(d.name).exclude).map(line).join("\n")||"(none)");
+  $("dlg").showModal();
+}
+$("list").addEventListener("change",e=>{
+  const n=e.target.dataset.n||e.target.dataset.x; if(!n) return; const s=it(n);
+  if(e.target.dataset.n) s.relabel=e.target.checked; else s.exclude=e.target.checked;
+  save(); summary(); const c=$("c_"+n); if(c) c.classList.toggle("flagged",s.relabel||s.exclude);
+});
+$("list").addEventListener("input",e=>{const n=e.target.dataset.note; if(n){it(n).note=e.target.value; save(); summary();}});
+$("who").addEventListener("input",e=>{state.who=e.target.value; save()});
+$("tfp").onclick=()=>{kind="fp";render();scrollTo(0,0)}; $("tfn").onclick=()=>{kind="fn";render();scrollTo(0,0)};
+$("only").onclick=()=>{only=!only;render()};
+$("finish").onclick=finish; $("finish2").onclick=finish;
+document.addEventListener("click",e=>{const id=e.target.dataset&&e.target.dataset.copy; if(id){const t=$(id).textContent; try{navigator.clipboard.writeText(t)}catch(x){}}});
+$("copy").onclick=()=>{$("txt").select(); try{navigator.clipboard.writeText($("txt").value)}catch(e){document.execCommand("copy")}};
+$("close").onclick=()=>$("dlg").close();
+$("unlock").onclick=unlock; $("gpass").addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+if(CFG.mode==="encrypted"){ $("gate").hidden=false; $("gname").value=state.who; } else start();
+</script>
+</body>
+</html>
